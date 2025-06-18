@@ -18,13 +18,13 @@ docker-compose up --build
 
 ## 📋 Serviços e Portas
 
-| Serviço | Tecnologia | URL | Porta | Status |
+| Serviço | Tecnologia | URL | Porta | Função |
 |---------|------------|-----|-------|--------|
-| **Frontend** | Next.js 13 | http://localhost:3000 | 3000 | ✅ Pronto |
-| **Consumer API** | Spring Boot | http://localhost:8080 | 8080 | ✅ Pronto |
-| **Producer API** | Spring Boot | http://localhost:8085 | 8085 | ✅ Pronto |
-| **RabbitMQ Web** | Management UI | http://localhost:15672 | 15672 | ✅ Pronto |
-| **MongoDB** | Database | mongodb://localhost:27017 | 27017 | ✅ Pronto |
+| **Frontend** | Next.js 13 | http://localhost:3000 | 3000 | Interface web para visualização de pedidos |
+| **Consumer API** | Spring Boot | http://localhost:8080 | 8080 | Consome mensagens, persiste no MongoDB e serve dados via GraphQL |
+| **Producer API** | Spring Boot | http://localhost:8085 | 8085 | API GraphQL que recebe chamadas e publica mensagens no RabbitMQ |
+| **RabbitMQ Web** | Management UI | http://localhost:15672 | 15672 | Interface de gerenciamento do message broker |
+| **MongoDB** | Database | mongodb://localhost:27017 | 27017 | Banco de dados para persistência das orders |
 
 ## � Comandos Docker
 
@@ -91,31 +91,85 @@ curl http://localhost:8080/actuator/health
 curl http://localhost:8085/actuator/health
 ```
 
+## 🔌 Endpoints das APIs
+
+### Producer Service (http://localhost:8085)
+- `POST /graphql` - Endpoint GraphQL para criar pedidos
+- `GET /actuator/health` - Health check
+- `GET /actuator/metrics` - Métricas do serviço
+
+### Consumer Service (http://localhost:8080)
+- `POST /graphql` - Endpoint GraphQL para consultas de pedidos
+- `GET /actuator/health` - Health check  
+- `GET /actuator/metrics` - Métricas do serviço
+
+### GraphQL Schemas
+
+#### Producer Service (Criação)
+```graphql
+type Mutation {
+  createOrder(input: OrderInput!): Order
+}
+
+input OrderInput {
+  customerId: String!
+  items: [OrderItemInput!]!
+}
+```
+
+#### Consumer Service (Consultas)
+```graphql
+type Query {
+  orders: [Order]
+  order(id: ID!): Order
+}
+
+type Order {
+  id: ID!
+  customerId: String!
+  items: [OrderItem!]!
+  totalAmount: Float!
+  status: String!
+  createdAt: String!
+}
+```
+
 ## 📁 Estrutura do Projeto
 
 ```
 e-commerce-case/
 ├── docker-compose.yaml           # 🐳 Orquestração completa
-├── producer-service/             # 🏭 Serviço Produtor
+├── producer-service/             # 🏭 Serviço Produtor (API GraphQL para criação)
 │   ├── Dockerfile               #    Container Spring Boot
 │   ├── pom.xml                  #    Dependências Maven
-│   └── src/                     #    Código Java
-├── consumer-service/             # 📦 Serviço Consumidor  
+│   └── src/                     #    Código Java + GraphQL + RabbitMQ Publisher
+├── consumer-service/             # 📦 Serviço Consumidor (Processa mensagens)
 │   ├── Dockerfile               #    Container Spring Boot
 │   ├── pom.xml                  #    Dependências Maven
-│   └── src/                     #    Código Java + GraphQL
-└── orders-ui/                   # 🎨 Interface Web
+│   └── src/                     #    Código Java + GraphQL + MongoDB + RabbitMQ Consumer
+└── orders-ui/                   # 🎨 Interface Web (Visualização apenas)
     ├── Dockerfile               #    Container Next.js
     ├── package.json             #    Dependências NPM
-    └── src/                     #    Código React/TypeScript
+    └── src/                     #    Código React/TypeScript + Apollo GraphQL
 ```
 
 ## 🔄 Fluxo de Dados
 
-1. **Frontend** → Envia pedidos via GraphQL → **Consumer Service**
-2. **Consumer** → Salva no **MongoDB** → Publica evento → **RabbitMQ**  
-3. **Producer** → Consome eventos → **RabbitMQ** → Processa pedidos
-4. **Frontend** → Consulta dados → **Consumer Service** → **MongoDB**
+### Criação de Pedidos
+1. **Chamadas externas** → **Producer Service** (GraphQL)
+2. **Producer** → Publica mensagem → **RabbitMQ**
+3. **Consumer** → Lê mensagem → **RabbitMQ** → Persiste no **MongoDB**
+
+### Consulta de Pedidos  
+1. **Frontend** → Consulta via GraphQL → **Consumer Service**
+2. **Consumer** → Busca dados → **MongoDB** → Retorna lista de orders
+
+### Arquitetura
+- **Producer Service**: API GraphQL que recebe chamadas externas e publica eventos no RabbitMQ
+- **Consumer Service**: Consome mensagens do RabbitMQ, persiste no MongoDB e serve dados via GraphQL
+- **Frontend**: Interface web apenas para visualização das orders (não cria pedidos)
+- **RabbitMQ**: Message broker para comunicação assíncrona entre serviços
+- **MongoDB**: Banco de dados NoSQL para persistência das orders
 
 ## 🛠️ Desenvolvimento Local
 
