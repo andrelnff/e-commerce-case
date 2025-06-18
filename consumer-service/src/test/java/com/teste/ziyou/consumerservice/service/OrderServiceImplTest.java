@@ -11,16 +11,16 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-class OrderServiceTest {
+class OrderServiceImplTest {
 
     private OrderRepository orderRepository;
-    private OrderService orderService;
+    private OrderServiceImpl orderServiceImpl;
     private Order order;
 
     @BeforeEach
     void setUp() {
         orderRepository = mock(OrderRepository.class);
-        orderService = new OrderService(orderRepository);
+        orderServiceImpl = new OrderServiceImpl(orderRepository);
 
         order = new Order();
         order.setOrder("Test Order");
@@ -30,7 +30,7 @@ class OrderServiceTest {
     void shouldSaveOrderSuccessfully_WhenValidOrderProvided() {
         when(orderRepository.save(any(Order.class))).thenReturn(order);
 
-        assertDoesNotThrow(() -> orderService.saveOrder(order));
+        assertDoesNotThrow(() -> orderServiceImpl.saveOrder(order));
         verify(orderRepository, times(1)).save(any(Order.class));
     }
 
@@ -38,7 +38,7 @@ class OrderServiceTest {
     void shouldRetrieveAllOrders_WhenFindAllMethodIsCalled() {
         when(orderRepository.findAll()).thenReturn(List.of(order));
 
-        List<Order> orders = orderService.findAll();
+        List<Order> orders = orderServiceImpl.findAll();
 
         assertEquals(1, orders.size());
         assertEquals("Test Order", orders.get(0).getOrder());

@@ -1,10 +1,13 @@
 package com.teste.ziyou.producerservice.controller;
 
+import com.teste.ziyou.producerservice.model.MessageResponse;
 import com.teste.ziyou.producerservice.model.Order;
 import com.teste.ziyou.producerservice.service.OrderService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+
+import java.time.Instant;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -26,12 +29,18 @@ class OrderControllerTest {
 
     @Test
     void shouldPublishOrderSuccessfully() {
-        when(orderService.publishOrder(testOrder)).thenReturn("Pedido Test Order recebido e enviado para processamento!");
+        MessageResponse expectedResponse = MessageResponse.builder()
+                        .success(true)
+                        .message("Pedido Test Order recebido e enviado para processamento!")
+                        .timestamp(Instant.now().toString())
+                        .build();
 
-        String response = orderController.publishPlacedOrderMessage(testOrder);
+        when(orderService.publishOrder(testOrder)).thenReturn(expectedResponse);
+
+        MessageResponse response = orderController.publishPlacedOrderMessage(testOrder);
 
         assertNotNull(response);
-        assertEquals("Pedido Test Order recebido e enviado para processamento!", response);
+        assertEquals("Pedido Test Order recebido e enviado para processamento!", response.getMessage());
         verify(orderService, times(1)).publishOrder(testOrder);
     }
 }

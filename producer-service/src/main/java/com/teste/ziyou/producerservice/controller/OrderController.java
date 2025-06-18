@@ -1,5 +1,6 @@
 package com.teste.ziyou.producerservice.controller;
 
+import com.teste.ziyou.producerservice.model.MessageResponse;
 import com.teste.ziyou.producerservice.model.Order;
 import com.teste.ziyou.producerservice.service.OrderService;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +17,7 @@ public class OrderController {
     private final OrderService orderService;
 
     @MutationMapping
-    public String publishPlacedOrderMessage(@Argument Order order) {
+    public MessageResponse publishPlacedOrderMessage(@Argument Order order) {
         log.info("Requisição recebida para publicar pedido: {}", order.getOrder());
         return orderService.publishOrder(order);
     }
