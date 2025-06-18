@@ -4,6 +4,18 @@ spring:
   rabbitmq:
     host: localhost
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+  health:
+    rabbit:
+      enabled: true
+
 server:
   port: 8085
 
