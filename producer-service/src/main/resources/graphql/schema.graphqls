@@ -1,9 +1,15 @@
 type Mutation {
-    publishPlacedOrderMessage(order: OrderInput!): String
+    publishPlacedOrderMessage(order: OrderInput!): MessageResponse!
 }
 
 type Query {
     _empty: String
+}
+
+type MessageResponse {
+    success: Boolean!
+    timestamp: String!
+    message: String
 }
 
 input OrderInput {
