@@ -108,29 +108,47 @@ curl http://localhost:8085/actuator/health
 #### Producer Service (Criação)
 ```graphql
 type Mutation {
-  createOrder(input: OrderInput!): Order
+  publishPlacedOrderMessage(order: OrderInput!): String
 }
 
 input OrderInput {
-  customerId: String!
-  items: [OrderItemInput!]!
+  order: String!
+  origin: String!
+  total: Float!
+  createdAt: String!
+  items: [ItemInput!]!
+}
+
+input ItemInput {
+  name: String!
+  image: String!
+  qty: Int!
+  cost: Float!
+  currency: String!
 }
 ```
 
 #### Consumer Service (Consultas)
 ```graphql
 type Query {
-  orders: [Order]
-  order(id: ID!): Order
+  placedOrders: [Order!]
 }
 
 type Order {
   id: ID!
-  customerId: String!
-  items: [OrderItem!]!
-  totalAmount: Float!
-  status: String!
+  order: String!
+  origin: String!
+  total: Float!
   createdAt: String!
+  items: [Item!]!
+}
+
+type Item {
+  name: String!
+  image: String!
+  qty: Int!
+  cost: Float!
+  currency: String!
 }
 ```
 
