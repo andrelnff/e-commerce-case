@@ -1,0 +1,20 @@
+type Query {
+    placedOrders: [Order!]
+}
+
+type Order {
+    id: ID!
+    order: String!
+    origin: String!
+    total: Float!
+    createdAt: String!
+    items: [Item!]!
+}
+
+type Item {
+    name: String!
+    image: String!
+    qty: Int!
+    cost: Float!
+    currency: String!
+}
