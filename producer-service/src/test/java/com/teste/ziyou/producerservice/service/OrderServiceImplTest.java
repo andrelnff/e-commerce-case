@@ -1,5 +1,6 @@
 package com.teste.ziyou.producerservice.service;
 
+import com.teste.ziyou.producerservice.model.MessageResponse;
 import com.teste.ziyou.producerservice.model.Order;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -9,17 +10,17 @@ import org.springframework.test.util.ReflectionTestUtils;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-class OrderServiceTest {
+class OrderServiceImplTest {
 
     private RabbitTemplate rabbitTemplate;
-    private OrderService orderService;
+    private OrderServiceImpl orderServiceImpl;
     private static final String QUEUE_NAME = "orders.test.queue";
 
     @BeforeEach
     void setUp() {
         rabbitTemplate = mock(RabbitTemplate.class);
-        orderService = new OrderService(rabbitTemplate);
-        ReflectionTestUtils.setField(orderService, "queueName", QUEUE_NAME);
+        orderServiceImpl = new OrderServiceImpl(rabbitTemplate);
+        ReflectionTestUtils.setField(orderServiceImpl, "queueName", QUEUE_NAME);
     }
 
     @Test
@@ -29,23 +30,25 @@ class OrderServiceTest {
 
         doNothing().when(rabbitTemplate).convertAndSend(QUEUE_NAME, order);
 
-        String response = orderService.publishOrder(order);
+        MessageResponse response = orderServiceImpl.publishOrder(order);
 
         assertNotNull(response);
-        assertTrue(response.contains("Pedido Test Order recebido e enviado para processamento!"));
         verify(rabbitTemplate, times(1)).convertAndSend(QUEUE_NAME, order);
     }
 
     @Test
-    void shouldThrowException_WhenPublishOrderFails() {
+    void shouldReturnFailureResponse_WhenPublishOrderFails() {
         Order order = new Order();
         order.setOrder("Test Order");
 
         doThrow(new RuntimeException("RabbitMQ error"))
             .when(rabbitTemplate).convertAndSend(QUEUE_NAME, order);
 
-        assertThrows(RuntimeException.class, () -> orderService.publishOrder(order));
+        MessageResponse response = orderServiceImpl.publishOrder(order);
 
+        assertNotNull(response);
+        assertFalse(response.isSuccess());
+        assertEquals("Erro ao processar pedido: RabbitMQ error", response.getMessage());
         verify(rabbitTemplate, times(1)).convertAndSend(QUEUE_NAME, order);
     }
 }
