@@ -1,0 +1,23 @@
+type Mutation {
+    publishPlacedOrderMessage(order: OrderInput!): String
+}
+
+type Query {
+    _empty: String
+}
+
+input OrderInput {
+    order: String!
+    origin: String!
+    total: Float!
+    createdAt: String!
+    items: [ItemInput!]!
+}
+
+input ItemInput {
+    name: String!
+    image: String!
+    qty: Int!
+    cost: Float!
+    currency: String!
+}
