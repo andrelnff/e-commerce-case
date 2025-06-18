@@ -21,9 +21,7 @@ class OrderServiceImplTest {
         rabbitTemplate = mock(RabbitTemplate.class);
         orderServiceImpl = new OrderServiceImpl(rabbitTemplate);
         ReflectionTestUtils.setField(orderServiceImpl, "queueName", QUEUE_NAME);
-    }
-
-    @Test
+    }    @Test
     void shouldPublishOrderSuccessfully() {
         Order order = new Order();
         order.setOrder("Test Order");
@@ -33,6 +31,9 @@ class OrderServiceImplTest {
         MessageResponse response = orderServiceImpl.publishOrder(order);
 
         assertNotNull(response);
+        assertTrue(response.isSuccess());
+        assertNotNull(response.getTimestamp());
+        assertEquals("Pedido Test Order recebido e enviado para processamento!", response.getMessage());
         verify(rabbitTemplate, times(1)).convertAndSend(QUEUE_NAME, order);
     }
 
@@ -48,6 +49,7 @@ class OrderServiceImplTest {
 
         assertNotNull(response);
         assertFalse(response.isSuccess());
+        assertNotNull(response.getTimestamp());
         assertEquals("Erro ao processar pedido: RabbitMQ error", response.getMessage());
         verify(rabbitTemplate, times(1)).convertAndSend(QUEUE_NAME, order);
     }

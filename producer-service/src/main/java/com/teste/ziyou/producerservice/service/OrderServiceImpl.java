@@ -25,6 +25,7 @@ public class OrderServiceImpl implements OrderService {
             log.info("Pedido {} enviado para processamento com sucesso", order.getOrder());
             return MessageResponse.builder()
                     .success(true)
+                    .timestamp(java.time.Instant.now().toString())
                     .message("Pedido " + order.getOrder() + " recebido e enviado para processamento!")
                     .build();
 
@@ -32,6 +33,7 @@ public class OrderServiceImpl implements OrderService {
             log.error("Erro ao publicar pedido: {}", e.getMessage());
             return MessageResponse.builder()
                     .success(false)
+                    .timestamp(java.time.Instant.now().toString())
                     .message("Erro ao processar pedido: " + e.getMessage())
                     .build();
         }
