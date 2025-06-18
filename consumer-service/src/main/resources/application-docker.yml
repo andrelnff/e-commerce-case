@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: consumer-service
+  data:
+    mongodb:
+      uri: ${SPRING_DATA_MONGODB_URI:mongodb://admin:password@mongodb:27017/marketplace?authSource=admin}
+  rabbitmq:
+    host: ${SPRING_RABBITMQ_HOST:rabbitmq}
+    port: 5672
+    username: guest
+    password: guest
+
+rabbitmq:
+  queue:
+    name: orders.queue
