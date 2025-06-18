@@ -10,6 +10,23 @@ spring:
     username: guest
     password: guest
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+  health:
+    rabbit:
+      enabled: true
+    mongo:
+      enabled: true
+
+server:
+  port: 8080
+
 rabbitmq:
   queue:
     name: orders.queue
